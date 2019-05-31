@@ -10,6 +10,7 @@ function makeGraphs(error, salaryData) { // The first argument is an error respo
     show_gender_balance(ndx); // Pass ndx (the crossfilter) to the function that will create the graph
 
     show_average_salary(ndx); // show average salary
+    show_rank_distribution(ndx); // show average salary
 
     dc.renderAll(); // render the graphs
 
@@ -46,7 +47,7 @@ function show_gender_balance(ndx) {
 function show_average_salary(ndx) {
     var dim = ndx.dimension(dc.pluck('sex'));
     var averageSalaryByGender = dim.group().reduce(add_item, remove_item, initialise);
-    console.log("average salary by gender = " + averageSalaryByGender);
+    console.log(averageSalaryByGender.all());
 
     dc.barChart("#average-salary") // attach the bar chart to the relevant div and set its attributes
         .width(400)
@@ -64,6 +65,51 @@ function show_average_salary(ndx) {
         .xAxisLabel("Gender") // x axis label
         .yAxis().ticks(4); // the number of ticks that should appear on the u asis
 }
+
+function show_rank_distribution(ndx) {
+
+    var dim = ndx.dimension(dc.pluck('sex')); // create a dimension based on sex - male & female. Pluck function is in dc.min.js
+    var profByGender = rankByGender(dim, "Prof");
+    var asstProfByGender = rankByGender(dim, "AsstProf");
+    var assocProfByGender = rankByGender(dim, "AssocProf");
+
+    console.log(profByGender.all());
+
+
+    // Functions used by show_rank_distribution  
+
+    function rankByGender(dimension, rank) {
+        return dim.group().reduce(
+            function(p, v) {
+                p.total++
+                    if (v.rank == rank) {
+                        p.match++
+                    }
+                console.log(p);    
+                return p;
+            },
+            function(p, v) {
+                p.total--
+                    if (v.rank == rank) {
+                        p.match--
+                    }
+                return p;
+            },
+            function() {
+                return { total: 0, match: 0 };
+
+            }
+
+        );
+
+    }
+
+
+}
+
+
+
+// Functions used by above functions
 
 function add_item(p, v) {
     p.count++;
