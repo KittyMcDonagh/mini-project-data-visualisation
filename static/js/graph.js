@@ -1,9 +1,9 @@
 queue()
-    .defer(d3.csv, "data/Salaries.csv")                 // first argument is file type, second is file path and name
-    .await(makeGraphs);                                 // will wait for data to download and then call makeGraphs (or whatever name we call it)
+    .defer(d3.csv, "data/Salaries.csv")         // Load data - first argument is format of file, second is file path and name
+    .await(makeGraphs);                         // will wait for data to download and then call makeGraphs (or whatever name we call it)
     
 
-function makeGraphs(error, salaryData) {        // The first argument is an error and the second is a variable that the data from the CSV file will be passed into by queue.js.
+function makeGraphs(error, salaryData) {        // The first argument is an error response and the second is a variable that the data from the CSV file will be passed into by queue.js.
    var ndx = crossfilter(salaryData);           // Load salary data into crossfilter
 
    show_gender_balance(ndx);                    // Pass ndx (the crossfilter) to the function that will create the graph
@@ -13,7 +13,7 @@ function makeGraphs(error, salaryData) {        // The first argument is an erro
 }
 
 function show_gender_balance(ndx) {
-    var dim = ndx.dimension(dc.pluck('sex'));          // create a dimension based on sex
+    var dim = ndx.dimension(dc.pluck('sex'));          // create a dimension based on sex. Pluck function is in dc.min.js
     var group = dim.group();                           // create a group based on sex
     
     dc.barChart("#gender-balance")                  // attach the bar chart to the relevant div and set its attributes
@@ -26,6 +26,6 @@ function show_gender_balance(ndx) {
     .x(d3.scale.ordinal())                                   // ordinal - because the dimension consists of the words male / female
     .xUnits(dc.units.ordinal)
     .elasticY(true)
-    .xAxisLabel("Gender")                                    // x axis label
+//    .xAxisLabel("Gender")                                    // x axis label
     .yAxis().ticks(20);                                        // the number of ticks that should appear on the u asis
 }
