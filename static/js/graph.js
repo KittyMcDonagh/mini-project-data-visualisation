@@ -6,6 +6,10 @@ queue()
 function makeGraphs(error, salaryData) { // The first argument is an error response and the second is a variable that the data from the CSV file will be passed into by queue.js.
     var ndx = crossfilter(salaryData); // Load salary data into crossfilter
 
+    salaryData.forEach(function(d) { // extract salary data
+        d.salary = parseInt(d.salary); // make it numeric
+    })
+
     show_discipline_selector(ndx); // select discipline
     show_gender_balance(ndx); // Pass ndx (the crossfilter) to the function that will create the graph
 
@@ -61,7 +65,7 @@ function show_average_salary(ndx) {
         .transitionDuration(500) // how quickly the chart animates when we filter
         .x(d3.scale.ordinal()) // ordinal - because the dimension consists of the words male / female
         .xUnits(dc.units.ordinal)
-        .elasticY(true)
+//        .elasticY(true)
         .xAxisLabel("Gender") // x axis label
         .yAxis().ticks(4); // the number of ticks that should appear on the u asis
 }
@@ -74,7 +78,25 @@ function show_rank_distribution(ndx) {
     var assocProfByGender = rankByGender(dim, "AssocProf");
 
     console.log(profByGender.all());
-
+    
+    dc.barChart("#rank-distribution")
+        .width(400)
+        .height(300)
+        .dimension(dim)
+        .group(profByGender, "Prof")
+        .stack(asstProfByGender, "Asst Prof")
+        .stack(assocProfByGender, "Assoc Prof")
+        .valueAccessor(function(d) {
+            if(d.value.total > 0) {
+                return (d.value.match / d.value.total) * 100;
+            } else {
+                return 0;
+            }
+        })
+        .x(d3.scale.ordinal())
+        .xUnits(dc.units.ordinal)
+        .legend(dc.legend().x(320).y(20).itemHeight(15).gap(5))
+        .margins({top: 10, right: 100, bottom: 30, left: 30});
 
     // Functions used by show_rank_distribution  
 
@@ -85,7 +107,7 @@ function show_rank_distribution(ndx) {
                     if (v.rank == rank) {
                         p.match++
                     }
-                console.log(p);    
+                console.log(p);
                 return p;
             },
             function(p, v) {
@@ -103,9 +125,8 @@ function show_rank_distribution(ndx) {
         );
 
     }
-
-
 }
+
 
 
 
@@ -135,3 +156,4 @@ function remove_item(p, v) {
 function initialise() {
     return { count: 0, total: 0, average: 0 };
 }
+
